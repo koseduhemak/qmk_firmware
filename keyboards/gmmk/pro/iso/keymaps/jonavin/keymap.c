@@ -40,7 +40,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_FN1] = LAYOUT(
         _______, KC_MYCM, KC_WHOM, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, _______, KC_CALC,          _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          RGB_TOG,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, RESET,            RGB_TOG,
         _______, _______, RGB_VAI, _______, _______, _______, _______, KC_PSCR, KC_SLCK, KC_PAUS, _______, _______, _______,                   KC_HOME,
         KC_CAPS, _______, RGB_VAD, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          KC_END,
         _______, RESET,   RGB_NITE,RGB_HUI, _______, _______, _______, KC_NLCK, _______, RGB_TOD, RGB_TOI, _______,          _______, RGB_MOD, _______,
@@ -78,8 +78,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     bool encoder_update_user(uint8_t index, bool clockwise) {
         uint8_t mods_state = get_mods();
-        if (mods_state & MOD_BIT(KC_LSFT) ) { // If you are holding L shift, encoder changes layers
-            encoder_action_layerchange(clockwise);
+        if (mods_state & MOD_BIT(KC_LSFT) ) { // If you are holding L shift, encoder changes brightness
+            if (clockwise) {
+			  tap_code(KC_BRIU);
+			} else {
+			  tap_code(KC_BRID);
+			}
         } else if (mods_state & MOD_BIT(KC_RSFT) ) { // If you are holding R shift, Page up/dn
             unregister_mods(MOD_BIT(KC_RSFT));
             encoder_action_navpage(clockwise);
@@ -90,7 +94,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
             encoder_action_rgbhue(clockwise);
         } else if (mods_state & MOD_BIT(KC_LALT)) {  // if holding Left Alt, change media next/prev track
             encoder_action_mediatrack(clockwise);
-        } else  {
+		} else  {
             switch(get_highest_layer(layer_state)) {
             case _FN1:
                 #ifdef IDLE_TIMEOUT_ENABLE
@@ -189,3 +193,16 @@ void keyboard_post_init_keymap(void) {
         activate_rgb_nightmode(false);  // Set to true if you want to startup in nightmode, otherwise use Fn + Z to toggle
     #endif
 }
+
+
+/*/ When custom keycode ENC_MODE is clicked, switch encoder direction
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case KC_MUTE:
+      if (record->event.pressed)  
+		  SEND_STRING(":'-(");
+      return false; // Skip all further processing of this key
+    default:
+      return true; // Process all other keycodes normally
+  }
+}*/
