@@ -78,7 +78,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     bool encoder_update_user(uint8_t index, bool clockwise) {
         uint8_t mods_state = get_mods();
-        if (mods_state & MOD_BIT(KC_LSFT) ) { // If you are holding L shift, encoder changes brightness
+        if (mods_state & MOD_BIT(KC_LALT) ) { // If you are holding L shift, encoder changes brightness
             if (clockwise) {
 			  tap_code(KC_BRIU);
 			} else {
@@ -92,7 +92,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
             encoder_action_navword(clockwise);
         } else if (mods_state & MOD_BIT(KC_RCTL)) {  // if holding Right Ctrl, change rgb hue/colour
             encoder_action_rgbhue(clockwise);
-        } else if (mods_state & MOD_BIT(KC_LALT)) {  // if holding Left Alt, change media next/prev track
+        } else if (mods_state & MOD_BIT(KC_LSFT)) {  // if holding Left Alt, change media next/prev track
             encoder_action_mediatrack(clockwise);
 		} else  {
             switch(get_highest_layer(layer_state)) {
