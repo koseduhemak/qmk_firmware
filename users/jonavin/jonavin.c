@@ -116,7 +116,14 @@ __attribute__ ((weak))  bool process_record_keymap(uint16_t keycode, keyrecord_t
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_record_keymap(keycode, record)) { return false; }
+	uint8_t mods_state = get_mods();
     switch (keycode) {
+	case KC_MUTE:
+		if (record->event.pressed && mods_state & MOD_BIT(KC_LALT)) { 
+			tap_code(KC_MPLY);
+			return false;
+		}
+		break;	// Skip all further processing of this key
     case KC_00:
         if (record->event.pressed) {
             // when keycode KC_00 is pressed
