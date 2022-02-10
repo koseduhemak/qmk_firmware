@@ -119,9 +119,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	uint8_t mods_state = get_mods();
     switch (keycode) {
 	case KC_MUTE:
-		if (record->event.pressed && mods_state & MOD_BIT(KC_LALT)) { 
+		if (record->event.pressed && mods_state & MOD_BIT(KC_LSFT)) { 
 			tap_code(KC_MPLY);
-			return false;
+			unregister_code16(keycode);
 		}
 		break;	// Skip all further processing of this key
     case KC_00:
