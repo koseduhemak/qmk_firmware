@@ -1,0 +1,2 @@
+VIA_ENABLE = no
+IDLE_TIMEOUT_ENABLE = yes
