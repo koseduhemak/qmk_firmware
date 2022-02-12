@@ -160,7 +160,7 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         rgb_matrix_set_color(LED_L7, RGB_RED);
     }
 }
-
+/*
 // IDLE TIMEOUTS
 #ifdef IDLE_TIMEOUT_ENABLE
     #define TIMEOUT_THRESHOLD_DEFAULT   1    // default timeout minutes
@@ -216,4 +216,4 @@ void timeout_tick_timer(void) {
         #endif
         matrix_scan_keymap();
     }
-#endif   // IDLE_TIMEOUT_ENABLE
+#endif   // IDLE_TIMEOUT_ENABLE*/
