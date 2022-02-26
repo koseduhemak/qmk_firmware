@@ -65,11 +65,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #ifdef ENCODER_ENABLE
 bool encoder_update_user(uint8_t index, bool clockwise) {
     uint8_t mods_state = get_mods();
-    if (mods_state & MOD_BIT(KC_LSFT)) {  // If you are holding L shift, encoder changes layers
+    if (mods_state & MOD_BIT(KC_LCTL)) {  // If you are holding L shift, encoder changes layers
+        unregister_mods(MOD_BIT(KC_LCTL));
+
         if (clockwise)
             tap_code(KC_MNXT);
         else
             tap_code(KC_MPRV);
+        
+        register_mods(MOD_BIT(KC_LCTL));
     } else if (mods_state & MOD_BIT(KC_RSFT)) {  // If you are holding R shift, Page up/dn
         unregister_mods(MOD_BIT(KC_RSFT));
         if (clockwise)
@@ -77,11 +81,13 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         else
             tap_code16(KC_PGDN);
         register_mods(MOD_BIT(KC_RSFT));
-    } else if (mods_state & MOD_BIT(KC_LCTL)) {  // if holding Left Ctrl, navigate next/prev word
+    } else if (mods_state & MOD_BIT(KC_LSFT)) {  // if holding Left Shift, navigate next/prev word
+        unregister_mods(MOD_BIT(KC_LSFT));
         if (clockwise)
             tap_code16(LCTL(KC_RGHT));
         else
-            tap_code16(LCTL(KC_LEFT));
+            tap_code16(LCTL(KC_LSFT));
+        register_mods(MOD_BIT(KC_LSFT));
     } else if (mods_state & MOD_BIT(KC_RCTL)) {  // if holding Right Ctrl, change rgb hue/colour
         if (clockwise)
             rgblight_increase_hue_noeeprom();
@@ -121,24 +127,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     uint8_t mods_state = get_mods();
     switch (keycode) {
         case KC_MUTE:
-            if (record->event.pressed && mods_state & MOD_BIT(KC_LSFT)) {
-                tap_code(KC_MPLY);
-                unregister_code16(keycode);
-            }
-            return false;
-            /*case LT(0,KC_NO):
-                if (record->tap.count && record->event.pressed) {
-                    tap_code(KC_CAPS); // Intercept tap function to send Ctrl-C
-                } else if (record->event.pressed) {
-                    tap_code16(C(KC_V)); // Intercept hold function to send Ctrl-V
+            if (mods_state & MOD_BIT(KC_LCTL)) {
+                //unregister_mods(MOD_BIT(KC_LCTL));
+                if (record->event.pressed) {
+                    tap_code(KC_MPLY);
+                    //register_mods(MOD_BIT(KC_LSFT));
+                    // unregister_code16(keycode);
                 }
-                return false;*/
+                //register_mods(MOD_BIT(KC_LCTL));
+            }
+
         default:
             if (record->event.pressed) {
-            #ifdef IDLE_TIMEOUT_ENABLE
+#ifdef IDLE_TIMEOUT_ENABLE
                 timeout_reset_timer();  // reset activity timer
-            #endif
-                
+#endif
             }
     }
     return true;
