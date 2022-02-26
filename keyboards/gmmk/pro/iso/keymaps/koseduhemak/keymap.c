@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include QMK_KEYBOARD_H
 #include "rgb_matrix_map.h"
 #include "led.c"
+#include "timeout.c"
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -50,11 +51,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [1] = LAYOUT(
-        _______, KC_MYCM, KC_WHOM, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, _______, _______,          _______,
+        _______, KC_BRID, KC_BRIU, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, KC_WFAV, _______,          _______,
         _______, RGB_TOG, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, RESET,            _______,
-        _______, _______, RGB_VAI, _______, _______, _______, _______, _______, KC_UP, _______, _______, _______, _______,                   _______,
-        _______, _______, RGB_VAD, _______, _______, _______, _______, KC_LEFT,    KC_DOWN,    KC_RIGHT,    _______, _______, _______, _______,          _______,
-        _______, _______, _______, RGB_HUI, _______, _______, _______, NK_TOGG, _______, _______, _______, _______,          _______, RGB_MOD, _______,
+        _______, _______, KC_W, _______, _______, _______, _______, _______, KC_UP, _______, _______, _______, RGB_VAI,                   _______,
+        _______, _______, KC_S, _______, _______, _______, _______, KC_LEFT,    KC_DOWN,    KC_RIGHT,    _______, _______, _______, _______,          _______,
+        _______, _______, _______, RGB_HUI, _______, _______, _______, NK_TOGG, _______, _______, _______, RGB_VAD,          _______, RGB_MOD, _______,
         _______, _______, _______,                            _______,                            _______, _______, _______, RGB_SPD, RGB_RMOD, RGB_SPI
     ),
 
@@ -72,7 +73,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
             tap_code(KC_MNXT);
         else
             tap_code(KC_MPRV);
-        
+
         register_mods(MOD_BIT(KC_LCTL));
     } else if (mods_state & MOD_BIT(KC_RSFT)) {  // If you are holding R shift, Page up/dn
         unregister_mods(MOD_BIT(KC_RSFT));
@@ -92,28 +93,19 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         register_mods(MOD_BIT(KC_LSFT));
     } else if (mods_state & MOD_BIT(KC_RCTL)) {  // if holding Right Ctrl, change rgb hue/colour
         if (clockwise)
-            rgblight_increase_hue_noeeprom();
+            rgblight_increase_hue();
         else
-            rgblight_decrease_hue_noeeprom();
-    } else if (mods_state & MOD_BIT(KC_LALT)) {  // if holding Left Alt, change media next/prev track
-        // unregister_mods(MOD_BIT(KC_LALT));
+            rgblight_decrease_hue();
+    } else if (mods_state & MOD_BIT(KC_LGUI)) {  // if holding Left Alt, change brightness up and down
+
         if (clockwise) {
             tap_code(KC_BRIU);
         } else {
             tap_code(KC_BRID);
         }
-        // register_mods(MOD_BIT(KC_LALT));
-        /*if (clockwise) {
-            if(selected_layer  < (DYNAMIC_KEYMAP_LAYER_COUNT - 1)) {
-                selected_layer ++;
-                layer_move(selected_layer);
-            }
-        } else {
-            if (selected_layer  > 0) {
-                selected_layer --;
-                layer_move(selected_layer);
-            }
-        }*/
+
+        return false;
+
     } else {
         if (clockwise) {
             tap_code(KC_VOLU);
@@ -127,28 +119,44 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     uint8_t mods_state = get_mods();
-    switch (keycode) {
-        case KC_MUTE:
-            if (mods_state & MOD_BIT(KC_LCTL)) {
-                //unregister_mods(MOD_BIT(KC_LCTL));
-                if (record->event.pressed) {
-                    tap_code(KC_MPLY);
-                    //register_mods(MOD_BIT(KC_LSFT));
-                    // unregister_code16(keycode);
-                }
-                //register_mods(MOD_BIT(KC_LCTL));
-            }
 
-        default:
-            if (record->event.pressed) {
+    switch (get_highest_layer(layer_state | default_layer_state)) {
+        case 0:
+            switch (keycode) {
+                case KC_MUTE:
+                    if (mods_state & MOD_BIT(KC_LCTL)) {
+                        if (record->event.pressed) {
+                            tap_code(KC_MPLY);
+                        }
+                    }
+                default:
+                    if (record->event.pressed) {
 #ifdef IDLE_TIMEOUT_ENABLE
-                timeout_reset_timer();  // reset activity timer
+                        timeout_reset_timer();  // reset activity timer
 #endif
+                    }
+            }
+            break;
+        case 1:
+            switch (keycode) {
+                case KC_C:
+                    if (record->event.pressed) {
+                        rgblight_sethsv_noeeprom(HSV_GOLD);
+                    }
+                    return false;
+                case KC_W:
+                    if (record->event.pressed) {
+                        rgblight_sethsv_noeeprom(HSV_WHITE);
+                    }
+                    return false;
+                    
             }
     }
+
     return true;
 }
 
+#ifdef RGB_MATRIX_ENABLE
 // RGB
 void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     // uint8_t mods_state = get_mods();
@@ -165,60 +173,4 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         rgb_matrix_set_color(LED_L7, RGB_RED);
     }
 }
-/*
-// IDLE TIMEOUTS
-#ifdef IDLE_TIMEOUT_ENABLE
-    #define TIMEOUT_THRESHOLD_DEFAULT   1    // default timeout minutes
-    #define TIMEOUT_THRESHOLD_MAX       15  // upper limits (2 hours and 10 minutes -- no rgb indicators above this value)
-
-    //prototype  functions
-    uint16_t get_timeout_threshold(void);
-    void timeout_reset_timer(void);
-    void timeout_update_threshold(bool increase);
-    void timeout_tick_timer(void);
-#endif  //IDLE_TIMEOUT_ENABLE
-
-// TIMEOUTS
-#ifdef IDLE_TIMEOUT_ENABLE
-static uint16_t timeout_timer     = 0;
-static uint16_t timeout_counter   = 0;  // in minute intervals
-static uint16_t timeout_threshold = TIMEOUT_THRESHOLD_DEFAULT;
-
-uint16_t get_timeout_threshold(void) { return timeout_threshold; }
-
-void timeout_reset_timer(void) {
-    timeout_timer   = timer_read();
-    timeout_counter = 0;
-};
-
-void timeout_update_threshold(bool increase) {
-    if (increase && timeout_threshold < TIMEOUT_THRESHOLD_MAX) timeout_threshold++;
-    if (!increase && timeout_threshold > 0) timeout_threshold--;
-};
-
-void timeout_tick_timer(void) {
-    if (timeout_threshold > 0) {
-        if (timer_elapsed(timeout_timer) >= 60000) {  // 1 minute tick
-            timeout_counter++;
-            timeout_timer = timer_read();
-        }
-#    ifdef RGB_MATRIX_ENABLE
-        if (timeout_threshold > 0 && timeout_counter >= timeout_threshold) {
-            rgb_matrix_disable_noeeprom();
-        }
-#    endif
-    }  // timeout_threshold = 0 will disable timeout
-}
-
-#endif  // IDLE_TIMEOUT_ENABLE
-
-#if defined(IDLE_TIMEOUT_ENABLE)       // timer features
-    __attribute__((weak)) void matrix_scan_keymap(void) {}
-
-    void matrix_scan_user(void) {
-        #ifdef IDLE_TIMEOUT_ENABLE
-            timeout_tick_timer();
-        #endif
-        matrix_scan_keymap();
-    }
-#endif   // IDLE_TIMEOUT_ENABLE*/
+#endif
