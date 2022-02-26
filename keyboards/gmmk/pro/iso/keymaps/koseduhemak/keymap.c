@@ -83,10 +83,12 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         register_mods(MOD_BIT(KC_RSFT));
     } else if (mods_state & MOD_BIT(KC_LSFT)) {  // if holding Left Shift, navigate next/prev word
         unregister_mods(MOD_BIT(KC_LSFT));
+
         if (clockwise)
             tap_code16(LCTL(KC_RGHT));
         else
-            tap_code16(LCTL(KC_LSFT));
+            tap_code16(LCTL(KC_LEFT));
+
         register_mods(MOD_BIT(KC_LSFT));
     } else if (mods_state & MOD_BIT(KC_RCTL)) {  // if holding Right Ctrl, change rgb hue/colour
         if (clockwise)
