@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include QMK_KEYBOARD_H
 #include "rgb_matrix_map.h"
 #include "led.c"
-#include "timeout.c"
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -128,12 +127,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         if (record->event.pressed) {
                             tap_code(KC_MPLY);
                         }
-                    }
-                default:
-                    if (record->event.pressed) {
-#ifdef IDLE_TIMEOUT_ENABLE
-                        timeout_reset_timer();  // reset activity timer
-#endif
                     }
             }
             break;
