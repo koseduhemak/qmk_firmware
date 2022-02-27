@@ -1,4 +1,4 @@
-#ifdef RGBLIGHT_ENABLE
+#if defined(IDLE_TIMEOUT_ENABLE) && defined(RGB_MATRIX_ENABLE)
     #define RGB_DISABLE_WHEN_USB_SUSPENDED
     #define RGBLIGHT_SLEEP
 #endif
