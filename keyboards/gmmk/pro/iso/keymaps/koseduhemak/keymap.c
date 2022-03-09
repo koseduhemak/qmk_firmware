@@ -166,12 +166,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     }
                     break;
                 case KC_BSPC:
-                    if (mods_state & MOD_BIT(KC_LCTL)) {
-                        // if left control is held and backspace is pressed simulate mac behavior and delete NEXT character
+                    if (mods_state & MOD_BIT(KC_LSFT)) {
+                        // if left shift is held and backspace is pressed simulate mac behavior and delete NEXT character
                         if (record->event.pressed) {
-                            unregister_mods(MOD_BIT(KC_LCTL));
+                            unregister_mods(MOD_BIT(KC_LSFT));
                             tap_code(KC_DEL);
-                            register_mods(MOD_BIT(KC_LCTL));
+                            register_mods(MOD_BIT(KC_LSFT));
                         } else {
                             host_consumer_send(0);
                         }
