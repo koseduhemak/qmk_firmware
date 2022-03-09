@@ -18,10 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "rgb_matrix_map.h"
 #include "led.c"
 
-enum custom_keycodes {
+enum layers {
   WIN,
   MAC,
   MODS
+};
+
+enum custom_keycodes {
+    ENCODERKNOB = SAFE_RANGE,
 };
 
 // clang-format off
@@ -47,7 +51,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // Since this is, among other things, a "gaming" keyboard, a key combination to enable NKRO on the fly is provided for convenience.
     // Press Fn+N to toggle between 6KRO and NKRO. This setting is persisted to the EEPROM and thus persists between restarts.
     [WIN] = LAYOUT(
-        KC_ESC,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  TG(MAC),          KC_MUTE,
+        KC_ESC,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  TG(MAC),          ENCODERKNOB,
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_BSPC,          KC_DEL,
         KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC,                   KC_PGUP,
         LT(MODS, KC_CAPS), KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, KC_NUHS, KC_ENT,           KC_PGDN,
@@ -56,7 +60,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [MAC] = LAYOUT(
-        KC_ESC,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  TG(MAC),          KC_MUTE,
+        KC_ESC,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  TG(MAC),          ENCODERKNOB,
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_BSPC,          KC_DEL,
         KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC,                   KC_PGUP,
         LT(MODS, KC_CAPS), KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, KC_NUHS, KC_ENT,           KC_PGDN,
@@ -65,7 +69,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [MODS] = LAYOUT(
-        _______, KC_BRID, KC_BRIU, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, KC_WFAV, _______,          _______,
+        _______, KC_BRID, KC_BRIU, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, ENCODERKNOB, KC_VOLD, KC_VOLU, KC_WFAV, _______,          _______,
         _______, RGB_TOG, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, RESET,            _______,
         _______, _______, KC_W, _______, _______, _______, _______, _______, KC_UP, _______, _______, _______, RGB_VAI,                   _______,
         _______, _______, KC_S, _______, _______, _______, _______, KC_LEFT,    KC_DOWN,    KC_RIGHT,    _______, _______, _______, _______,          _______,
@@ -95,27 +99,28 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         else
             tap_code16(KC_PGDN);
         register_mods(MOD_BIT(KC_RSFT));
-    } else if (mods_state & MOD_BIT(KC_LSFT)) {  // if holding Left Shift, navigate next/prev word
-        unregister_mods(MOD_BIT(KC_LSFT));
+    } else if (mods_state & MOD_BIT(KC_LGUI)) {  // if holding Left Shift, navigate next/prev word
+        unregister_mods(MOD_BIT(KC_LGUI));
 
         if (clockwise)
             tap_code16(LCTL(KC_RGHT));
         else
             tap_code16(LCTL(KC_LEFT));
 
-        register_mods(MOD_BIT(KC_LSFT));
+        register_mods(MOD_BIT(KC_LGUI));
     } else if (mods_state & MOD_BIT(KC_RCTL)) {  // if holding Right Ctrl, change rgb hue/colour
         if (clockwise)
             rgblight_increase_hue();
         else
             rgblight_decrease_hue();
-    } else if (mods_state & MOD_BIT(KC_LGUI)) {  // if holding Left Alt, change brightness up and down
-
+    } else if (mods_state & MOD_BIT(KC_LSFT)) {  // if holding Left Alt, change brightness up and down
+        unregister_mods(MOD_BIT(KC_LSFT));
         if (clockwise) {
             tap_code(KC_BRIU);
         } else {
             tap_code(KC_BRID);
         }
+        register_mods(MOD_BIT(KC_LSFT));
 
         return false;
 
@@ -137,7 +142,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case WIN:
         case MAC:
             switch (keycode) {
-                case KC_MUTE:
+                case ENCODERKNOB:
                     if (mods_state & MOD_BIT(KC_LCTL)) {
                         if (record->event.pressed) {
                             tap_code(KC_MPLY);
