@@ -145,6 +145,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MAC:
             switch (keycode) {
                 case KC_ENCODERKNOB:
+                    // if left control is held while pressing the knob, play / pause media playback
                     if (mods_state & MOD_BIT(KC_LCTL)) {
                         if (record->event.pressed) {
                             unregister_mods(MOD_BIT(KC_LCTL));
@@ -155,6 +156,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         }
                         return false;
                     } else {
+                        // if no modifier or other modifiers held, just mute
                         if (record->event.pressed) {
                             tap_code(KC_MUTE);
                         } else {
@@ -165,6 +167,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     break;
                 case KC_BSPC:
                     if (mods_state & MOD_BIT(KC_LCTL)) {
+                        // if left control is held and backspace is pressed simulate mac behavior and delete NEXT character
                         if (record->event.pressed) {
                             unregister_mods(MOD_BIT(KC_LCTL));
                             tap_code(KC_DEL);
@@ -179,6 +182,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
         case MODS:
             switch (keycode) {
+                // send special key code to make MissionControl work on mac
                 case KC_MISSION_CONTROL:
                     if (record->event.pressed) {
                         host_consumer_send(0x29F);
@@ -186,6 +190,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         host_consumer_send(0);
                     }
                     return false; // Skip all further processing of this key
+                // send special key code to make LaunchPad work on mac
                 case KC_LAUNCHPAD:
                     if (record->event.pressed) {
                         host_consumer_send(0x2A0);
@@ -193,6 +198,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         host_consumer_send(0);
                     }
                     return false; // Skip all further processing of this key
+                // control RGB lightning
                 case KC_C:
                     if (record->event.pressed) {
                         rgblight_sethsv_noeeprom(HSV_GOLD);
